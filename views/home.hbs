@@ -1,0 +1,25 @@
+<html lang="en">
+  {{> baseHead }}
+  <body>
+    {{> siteHeader}}
+    <div>
+        <h2>สวัสดีฟีลเฟรนด์ส</h2>
+        <p>วันนี้เพื่อนมีอะไรจะฝากถาม ...</p>
+        {{#each allPosts}}
+            <div style="background-color: rgb(222, 168, 168);">
+                <h4><a href="/p/{{ this.id }}">{{ this.title }}</a></h4>
+                <p>
+                    <span>{{ this.from }} | </span>
+                    <span>{{ this.createdAtText }}</span>
+                </p>
+                {{#if this.commentsCount}}
+                    <p>{{ this.commentsCount }} คอมเม้นต์</p>
+                {{else}}
+                    <p>ยังไม่มีคอมเม้นท์ มาเปิดกันที</p>
+                {{/if}}
+            </div>
+        {{/each}}
+    </div>
+    {{> siteFooter}}
+  </body>
+</html>
