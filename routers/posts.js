@@ -1,27 +1,11 @@
 const express = require('express');
 const dayjs = require('dayjs');
 const db = require('../db');
+const { request } = require('http');
 
 const router = express.Router();
 
-
-router.get('/', (request, response) => {
-    response.render('home', { allPosts });
-});
-
-router.get('/new', (request, response) => {
-    response.render('postNew');
-});
-
-router.post('/new', (request, response) => {
-    console.log(request.body);
-    const { title } = request.body ?? {};
-    response.send(`Submit ฟอร์มแล้วค่ะ Title=${title}`);
-})
-
-router.get('/:postId', async (request, response) => {
-    const { postId } = request.params;
-
+async function getPostAndComments(postId) {
     let onePost = null;
     let postComments = [];
     try {
@@ -49,7 +33,88 @@ router.get('/:postId', async (request, response) => {
     }
 
     const customTitle = !!onePost ? `${onePost.title}` : 'ไม่พบโพสต์นี้ | ';
-    response.render('postId', { onePost, customTitle, postComments });
+    return { onePost, postComments, customTitle };
+}
+
+
+router.get('/', (request, response) => {
+    response.render('home', { allPosts });
+});
+
+router.get('/new', (request, response) => {
+    response.render('postNew');
+});
+
+router.post('/new', async (request, response) => {
+    const { title, content, from, accepted } = request.body ?? {};
+    try {
+        // Validation
+        if (!title || !content || !from) {
+            throw new Error('no text');
+        }
+        else if (accepted != 'on') {
+            throw new Error('no accepted');
+        }
+        // Create post
+        await db.insert({ title, content, from, createdAt: new Date() }).into('post');
+    }
+    catch (error) {
+        console.error(error);
+        let errorMessage = 'ผิดพลาดอะไรซักอย่าง';
+
+        if (error.message === 'no text') {
+            errorMessage = 'กรุณาใส่ข้อมูลให้ครบ';
+        }
+        else if (error.message === 'no accepted') {
+            errorMessage = 'กรุณาติ๊กถูกยอมรับ'
+        }
+
+        return response.render('postNew', { errorMessage, values: { title, content, from } });
+    }
+    response.redirect('/p/new/done');
+});
+
+router.get('/new/done', (request, response) => {
+    response.render('postNewDone');
 })
+
+router.get('/:postId', async (request, response) => {
+    const { postId } = request.params;
+    const postData = await getPostAndComments(postId);
+    response.render('postId', postData);
+});
+
+router.post('/:postId/comment', async (request, response) => {
+    const { postId } = request.params;
+    const { content, from, accepted } = request.body ?? {};
+    try {
+        // Validation
+        if (!content || !from) {
+            throw new Error('no text');
+        }
+        else if (accepted != 'on') {
+            throw new Error('no accepted');
+        }
+        // Create comment
+        await db.insert({ content, from, createdAt: new Date(), postId: +postId }).into('comment');
+    }
+    catch (error) {
+        console.error(error);
+        let errorMessage = 'ผิดพลาดอะไรซักอย่าง';
+
+        if (error.message === 'no text') {
+            errorMessage = 'กรุณาใส่ข้อมูลให้ครบ';
+        }
+        else if (error.message === 'no accepted') {
+            errorMessage = 'กรุณาติ๊กถูกยอมรับ'
+        }
+
+        const postData = await getPostAndComments(postId);
+        return response.render('postId', {
+            ...postData, errorMessage, values: { content, from }
+        });
+    }
+    response.redirect(`/p/${postId}`);
+});
 
 module.exports = router;

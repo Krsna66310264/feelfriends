@@ -12,6 +12,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'hbs');
 hbs.registerPartials(path.join(__dirname, 'views', 'partials'));
+app.use('/static', express.static('static'));
 
 app.use('/', generalRouter);
 app.use('/p', postsRouter );

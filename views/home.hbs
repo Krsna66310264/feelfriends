@@ -2,24 +2,28 @@
   {{> baseHead }}
   <body>
     {{> siteHeader}}
-    <div>
+   <section class="section">
+     <div class="container">
         <h2>สวัสดีฟีลเฟรนด์ส</h2>
-        <p>วันนี้เพื่อนมีอะไรจะฝากถาม ...</p>
+        <p class="mg-bt-large">วันนี้เพื่อนมีอะไรจะฝากถาม ...</p>
         {{#each allPosts}}
-            <div style="background-color: rgb(222, 168, 168);">
+            <div class="box">
                 <h4><a href="/p/{{ this.id }}">{{ this.title }}</a></h4>
                 <p>
                     <span>{{ this.from }} | </span>
-                    <span>{{ this.createdAtText }}</span>
+                    <span class="text-gray">{{ this.createdAtText }}</span>
                 </p>
                 {{#if this.commentsCount}}
-                    <p>{{ this.commentsCount }} คอมเม้นต์</p>
+                    <div>{{ this.commentsCount }} คอมเม้นต์</div>
                 {{else}}
-                    <p>ยังไม่มีคอมเม้นท์ มาเปิดกันที</p>
+                    <div>ยังไม่มีคอมเม้นท์ มาเปิดกันที</div>
                 {{/if}}
             </div>
         {{/each}}
     </div>
+   </section>
     {{> siteFooter}}
+    {{> siteScrollTop }}
+    {{> siteScripts }}
   </body>
 </html>
